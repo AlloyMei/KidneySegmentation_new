@@ -32,7 +32,7 @@ os.chdir(current_file_dir)
 kidney_mask_side = 'L' # L or R
 masked_output_fn = 'Masked_' + kidney_mask_side + '.nii'
 MaskedData = nib.load(os.path.join(output_path, masked_output_fn))
-MaskedData = MaskedData.get_data()
+MaskedData = np.array(MaskedData.get_data())
 
 time_course_vector_name = 'time_course_vector_' + kidney_mask_side + '.npy'
 
@@ -81,6 +81,11 @@ os.chdir(current_file_dir)
 time_course_vector = np.load(os.path.join(output_path, time_course_vector_name))
 #"""
 
+# druga wersja TCV - przez reshape
+TCV_all = MaskedData.reshape(-1, MaskedData.shape[0]) #all voxels
+TCV_pure_idx = np.where(TCV_all[:,0]!=0)[0] # indices of nonzero-TCV voxels
+TCV_pure = TCV_all[TCV_pure_idx,:] # nonzero-TCV voxels
+
 #==============================================================================
 #3. reshape to 2D = 1*spatial + 1*TCV
 # (-> 2D array of shape (number_of_voxels, length_of_TCV) )
@@ -96,13 +101,20 @@ time_course_vector = np.load(os.path.join(output_path, time_course_vector_name))
 
 
 kmeans = KMeans(n_clusters=3).fit(time_course_vector)
+kmeans_TCV = KMeans(n_clusters=3).fit(TCV_pure)
+
 
 #==============================================================================
 #5. Find groups of voxels belonging to each cluster (0, 1, 2);
 # plot averaged intensity changes for each group
+time_course_vector_dict = {}
+for label in np.unique(kmeans.labels_):
+    time_course_vector_dict[label] = time_course_vector[kmeans.labels_==label,:]
+aux.plot_averaged_TCV(time_course_vector_dict)
+
 TCV_dict = {}
 for label in np.unique(kmeans.labels_):
-    TCV_dict[label] = time_course_vector[kmeans.labels_==label,:]
+    TCV_dict[label] = TCV_pure[kmeans_TCV.labels_==label,:]
 aux.plot_averaged_TCV(TCV_dict)
 
 #==============================================================================
