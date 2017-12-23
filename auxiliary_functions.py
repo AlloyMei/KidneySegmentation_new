@@ -60,3 +60,16 @@ def slicer(img, index0=None, slideaxis=2, title="Merged kidney mask"):
 
 
 #==============================================================================
+def plot_averaged_TCV(TCV_dict):
+    plt.figure()
+    for label in np.unique(TCV_dict.keys()):
+        plt.plot(np.mean(TCV_dict[label],axis=0), label=('cluster %d, %d voxels' %(label, np.shape(TCV_dict[label])[0])))
+    
+    plt.grid()
+    plt.legend(loc='best',fancybox=True, framealpha=0.5)
+    plt.title('Averaged time course vector for each cluster')
+    plt.xlabel('Frame index')
+    plt.ylabel('Voxel intensity')
+    plt.show()
+
+#==============================================================================
