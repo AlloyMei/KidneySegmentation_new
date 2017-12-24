@@ -10,6 +10,7 @@ import nibabel as nib
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 plt.close('all')
 
 #==============================================================================
@@ -29,7 +30,7 @@ mask_path = os.path.join(parent_dir, 'MaskData')
 os.chdir(current_file_dir)
 #==============================================================================
 #1. load the data
-kidney_mask_side = 'L' # L or R
+kidney_mask_side = 'R' # L or R
 masked_output_fn = 'Masked_' + kidney_mask_side + '.nii'
 MaskedData = nib.load(os.path.join(output_path, masked_output_fn))
 MaskedData = np.array(MaskedData.get_data())
@@ -82,7 +83,7 @@ time_course_vector = np.load(os.path.join(output_path, time_course_vector_name))
 #"""
 
 # druga wersja TCV - przez reshape
-TCV_all = MaskedData.reshape(-1, MaskedData.shape[0]) #all voxels
+TCV_all = np.transpose(MaskedData).reshape(-1, MaskedData.shape[0]) #all voxels
 TCV_pure_idx = np.where(TCV_all[:,0]!=0)[0] # indices of nonzero-TCV voxels
 TCV_pure = TCV_all[TCV_pure_idx,:] # nonzero-TCV voxels
 
@@ -101,8 +102,14 @@ TCV_pure = TCV_all[TCV_pure_idx,:] # nonzero-TCV voxels
 
 
 kmeans = KMeans(n_clusters=3).fit(time_course_vector)
+
 kmeans_TCV = KMeans(n_clusters=3).fit(TCV_pure)
 
+
+pca = PCA(n_components=30, whiten=False)
+pca.fit(TCV_all)
+TCV_red = pca.transform(TCV_all)
+kmeans_TCV_PCA = KMeans(n_clusters=4).fit(TCV_red)
 
 #==============================================================================
 #5. Find groups of voxels belonging to each cluster (0, 1, 2);
@@ -113,10 +120,18 @@ for label in np.unique(kmeans.labels_):
 aux.plot_averaged_TCV(time_course_vector_dict)
 
 TCV_dict = {}
-for label in np.unique(kmeans.labels_):
+for label in np.unique(kmeans_TCV.labels_):
     TCV_dict[label] = TCV_pure[kmeans_TCV.labels_==label,:]
 aux.plot_averaged_TCV(TCV_dict)
 
+
+TCV_PCA_dict = {}
+for label in np.unique(kmeans_TCV_PCA.labels_):
+    TCV_PCA_dict[label] = TCV_all[kmeans_TCV_PCA.labels_==label,:]
+aux.plot_averaged_TCV(TCV_PCA_dict)
+
+new_kidney = np.array(kmeans_TCV_PCA.labels_).reshape(MaskedData.shape[1:])
+aux.slicer(new_kidney, slideaxis=2, title='Segmented?')
 #==============================================================================
 #6. Find the 3D positions of the point groups
 # in the original (3D) data;
