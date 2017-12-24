@@ -130,11 +130,14 @@ for label in np.unique(kmeans_TCV_PCA.labels_):
     TCV_PCA_dict[label] = TCV_all[kmeans_TCV_PCA.labels_==label,:]
 aux.plot_averaged_TCV(TCV_PCA_dict)
 
-new_kidney = np.array(kmeans_TCV_PCA.labels_).reshape(MaskedData.shape[1:])
-aux.slicer(new_kidney, slideaxis=2, title='Segmented?')
+
 #==============================================================================
 #6. Find the 3D positions of the point groups
 # in the original (3D) data;
+new_kidney = np.transpose(np.array(kmeans_TCV_PCA.labels_).reshape(np.transpose(MaskedData).shape[:-1]))
+segmented_plot = aux.slicer(new_kidney, slideaxis=2, title='Segmented?')
+
+
 # create ROIs - 3 separate 3D images (spatial only)
 # and maybe an additional image - 3 colours of labels
 # superimposed on the original image?
