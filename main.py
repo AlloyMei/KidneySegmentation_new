@@ -35,107 +35,59 @@ masked_output_fn = 'Masked_' + kidney_mask_side + '.nii'
 MaskedData = nib.load(os.path.join(output_path, masked_output_fn))
 MaskedData = np.array(MaskedData.get_data())
 
-time_course_vector_name = 'time_course_vector_' + kidney_mask_side + '.npy'
+labels_fn = 'kmeans_labels_' + kidney_mask_side + '.npy'
 
 # Plotting kidney with a slicer enabled
 kidney_frozen_fig = aux.slicer(MaskedData[50,:,:,:], slideaxis=2, title='Kidney at 50s, coronal view')
 kidney_fixedslice_fig = aux.slicer(MaskedData[:,:,:,21], slideaxis=0, title='Kidney at coronal slice 21 of 30')
 
-
 #==============================================================================
-#2. Create time course vectors
 
-"""
-col_number = 0
-
-for i in range(MaskedData.shape[1]):
-    for j in range(MaskedData.shape[2]):
-        for k in range(MaskedData.shape[3]):
-            if MaskedData[0,i,j,k]!=0:
-                col_number=col_number+1
-print col_number
-time_course_vector = np.zeros(MaskedData.shape[0]*col_number).reshape(MaskedData.shape[0],col_number)
-print np.shape(time_course_vector)
-
-counter = 1
-for a in range(MaskedData.shape[0]):
-    print(counter)
-    temp = []
-    for i in range(MaskedData.shape[1]):
-        for j in range(MaskedData.shape[2]):
-            for k in range(MaskedData.shape[3]):
-                if MaskedData[a,i,j,k]!=0:
-                    temp.append(MaskedData[a,i,j,k])
-    if(len(temp)!=col_number):
-        while(len(temp)<col_number):
-            temp.append(0)
-    temp1 = np.asarray(temp)
-    time_course_vector[a,:]=temp1
-    counter=counter+1
-
-# Saving time course vector for left and right kidney to files to avoid re-calculation
-os.chdir(output_path) #change the path to the output folder for saving
-np.save(time_course_vector_name, np.transpose(time_course_vector))
-os.chdir(current_file_dir)
-"""
-# Load time course vector
-time_course_vector = np.load(os.path.join(output_path, time_course_vector_name))
-#"""
-
-# druga wersja TCV - przez reshape
-TCV_all = np.transpose(MaskedData).reshape(-1, MaskedData.shape[0]) #all voxels
-TCV_pure_idx = np.where(TCV_all[:,0]!=0)[0] # indices of nonzero-TCV voxels
-TCV_pure = TCV_all[TCV_pure_idx,:] # nonzero-TCV voxels
-
-#==============================================================================
-#3. reshape to 2D = 1*spatial + 1*TCV
+#2. create time course vector - reshape to 2D = 1*spatial + 1*TCV
 # (-> 2D array of shape (number_of_voxels, length_of_TCV) )
-# method? By 'flattennig' the first 3 dimensions to 1?
+# By 'flattennig' the last 3 dimensions to 1
+TCV_all = np.transpose(MaskedData).reshape(-1, MaskedData.shape[0])
 
-#update: 3. already in 2.?
+#TCV_all - for all voxels, also those outside the kidney
+# transpose to change the order of the dimensions - first dimension (time) becomes last
+# then we can use reshape with -1 as the first arguments
+# - to flatten along all dimensions but the last one (time)
+
+"""
+#==============================================================================
+#3. PCA
+# reduce dimensionality of the set (from 74 to n_components=30)
+pca = PCA(n_components=30, whiten=False).fit(TCV_all)
+TCV_red = pca.transform(TCV_all)
 
 #==============================================================================
 #4. K-Means
 # -> k.means_labels - 1D array of length of 'number_of_voxels',
-# filled with values: 0, 1, 2 - cluster indices for each voxel;
-# plot the K-Means - scatter plot
+# filled with values: 0, 1, 2, 3 - cluster indices for each voxel;
+# one of the labels - for non-kidney voxels
 
-
-kmeans = KMeans(n_clusters=3).fit(time_course_vector)
-
-kmeans_TCV = KMeans(n_clusters=3).fit(TCV_pure)
-
-
-pca = PCA(n_components=30, whiten=False)
-pca.fit(TCV_all)
-TCV_red = pca.transform(TCV_all)
-kmeans_TCV_PCA = KMeans(n_clusters=4).fit(TCV_red)
+kmeans = KMeans(n_clusters=4).fit(TCV_red)
+kmeans_labels = kmeans.labels_
+np.save(labels_fn, kmeans_labels)
+"""
+kmeans_labels = np.load(labels_fn)
 
 #==============================================================================
-#5. Find groups of voxels belonging to each cluster (0, 1, 2);
-# plot averaged intensity changes for each group
-time_course_vector_dict = {}
-for label in np.unique(kmeans.labels_):
-    time_course_vector_dict[label] = time_course_vector[kmeans.labels_==label,:]
-aux.plot_averaged_TCV(time_course_vector_dict)
+#5. Find groups of voxels belonging to each cluster (0, 1, 2, 3);
+# TCV_dict[0] - all time course vectors classified to cluster 0
 
 TCV_dict = {}
-for label in np.unique(kmeans_TCV.labels_):
-    TCV_dict[label] = TCV_pure[kmeans_TCV.labels_==label,:]
+for label in np.unique(kmeans_labels):
+    TCV_dict[label] = TCV_all[kmeans_labels==label,:]
+    
+# plot averaged intensity changes (averaged time course vector) for each cluster
 aux.plot_averaged_TCV(TCV_dict)
-
-
-TCV_PCA_dict = {}
-for label in np.unique(kmeans_TCV_PCA.labels_):
-    TCV_PCA_dict[label] = TCV_all[kmeans_TCV_PCA.labels_==label,:]
-aux.plot_averaged_TCV(TCV_PCA_dict)
-
 
 #==============================================================================
 #6. Find the 3D positions of the point groups
 # in the original (3D) data;
-new_kidney = np.transpose(np.array(kmeans_TCV_PCA.labels_).reshape(np.transpose(MaskedData).shape[:-1]))
-segmented_plot = aux.slicer(new_kidney, slideaxis=2, title='Segmented?')
+kidney_segmented = np.transpose(np.array(kmeans_labels).reshape(np.transpose(MaskedData).shape[:-1]))
+segmented_plot = aux.slicer(kidney_segmented, slideaxis=2, title='Segmented')
 
 
 # create ROIs - 3 separate 3D images (spatial only)
