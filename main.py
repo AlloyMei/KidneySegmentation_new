@@ -30,7 +30,7 @@ mask_path = os.path.join(parent_dir, 'MaskData')
 os.chdir(current_file_dir)
 #==============================================================================
 #1. load the data
-kidney_mask_side = 'R' # L or R
+kidney_mask_side = 'L' # L or R
 masked_output_fn = 'Masked_' + kidney_mask_side + '.nii'
 MaskedData = nib.load(os.path.join(output_path, masked_output_fn))
 MaskedData = np.array(MaskedData.get_data())
@@ -56,8 +56,8 @@ TCV_all = np.transpose(MaskedData).reshape(-1, MaskedData.shape[0])
 """
 #==============================================================================
 #3. PCA
-# reduce dimensionality of the set (from 74 to n_components=30)
-pca = PCA(n_components=30, whiten=False).fit(TCV_all)
+# reduce dimensionality of the set (from 74 to n_components)
+pca = PCA(n_components=15, whiten=False).fit(TCV_all)
 TCV_red = pca.transform(TCV_all)
 
 #==============================================================================
@@ -70,6 +70,7 @@ kmeans = KMeans(n_clusters=4).fit(TCV_red)
 kmeans_labels = kmeans.labels_
 np.save(labels_fn, kmeans_labels)
 """
+
 kmeans_labels = np.load(labels_fn)
 
 #==============================================================================
