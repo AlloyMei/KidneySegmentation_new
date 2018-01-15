@@ -30,7 +30,7 @@ mask_path = os.path.join(parent_dir, 'MaskData')
 os.chdir(current_file_dir)
 #==============================================================================
 #1. load the data
-kidney_mask_side = 'L' # L or R
+kidney_mask_side = 'R' # L or R
 masked_output_fn = 'Masked_' + kidney_mask_side + '.nii'
 MaskedData = nib.load(os.path.join(output_path, masked_output_fn))
 MaskedData = np.array(MaskedData.get_data())
@@ -89,6 +89,7 @@ aux.plot_averaged_TCV(TCV_dict)
 # in the original (3D) data;
 kidney_segmented = np.transpose(np.array(kmeans_labels).reshape(np.transpose(MaskedData).shape[:-1]))
 
+# create ROIs - 3 separate 3D images (spatial only)
 if kidney_mask_side == 'R':
     kidney_medulla = np.where(kidney_segmented==1,1,0)
     kidney_pelvis = np.where(kidney_segmented==2,1,0)
@@ -99,15 +100,11 @@ else:
     kidney_pelvis = np.where(kidney_segmented==3,1,0)
 
 segmented_plot = aux.slicer(kidney_segmented, slideaxis=2, title='Segmented')
+medulla_plot = aux.slicer(kidney_medulla, slideaxis=2, title='Medulla')
+cortex_plot = aux.slicer(kidney_cortex, slideaxis=2, title='Cortex')
+pelvis_plot = aux.slicer(kidney_pelvis, slideaxis=2, title='Pelvis')
 
-# create ROIs - 3 separate 3D images (spatial only)
-# and maybe an additional image - 3 colours of labels
-# superimposed on the original image?
-# Like with the brain in the 4th semester
-# CortexData = KidneyData
-# MedullaData = KidneyData
-# PelvisData = KidneyData
-#
+
 # #==============================================================================
 # #7. save to Nifti
 
