@@ -30,7 +30,7 @@ mask_path = os.path.join(parent_dir, 'MaskData')
 os.chdir(current_file_dir)
 #==============================================================================
 #1. load the data
-kidney_mask_side = 'R' # L or R
+kidney_mask_side = 'L' # L or R
 masked_output_fn = 'Masked_' + kidney_mask_side + '.nii'
 MaskedData = nib.load(os.path.join(output_path, masked_output_fn))
 MaskedData = np.array(MaskedData.get_data())
@@ -71,7 +71,6 @@ kmeans_labels = kmeans.labels_
 np.save(labels_fn, kmeans_labels)
 """
 kmeans_labels = np.load(labels_fn)
-
 #==============================================================================
 #5. Find groups of voxels belonging to each cluster (0, 1, 2, 3);
 # TCV_dict[0] - all time course vectors classified to cluster 0
@@ -79,7 +78,8 @@ kmeans_labels = np.load(labels_fn)
 TCV_dict = {}
 for label in np.unique(kmeans_labels):
     TCV_dict[label] = TCV_all[kmeans_labels==label,:]
-    
+
+
 # plot averaged intensity changes (averaged time course vector) for each cluster
 aux.plot_averaged_TCV(TCV_dict)
 
@@ -87,8 +87,17 @@ aux.plot_averaged_TCV(TCV_dict)
 #6. Find the 3D positions of the point groups
 # in the original (3D) data;
 kidney_segmented = np.transpose(np.array(kmeans_labels).reshape(np.transpose(MaskedData).shape[:-1]))
-segmented_plot = aux.slicer(kidney_segmented, slideaxis=2, title='Segmented')
 
+if kidney_mask_side == 'R':
+    kidney_medulla = np.where(kidney_segmented==1,1,0)
+    kidney_pelvis = np.where(kidney_segmented==2,1,0)
+    kidney_cortex = np.where(kidney_segmented==3,1,0)
+else:
+    kidney_medulla = np.where(kidney_segmented==1,1,0)
+    kidney_cortex = np.where(kidney_segmented==2,1,0)
+    kidney_pelvis = np.where(kidney_segmented==3,1,0)
+
+segmented_plot = aux.slicer(kidney_segmented, slideaxis=2, title='Segmented')
 
 # create ROIs - 3 separate 3D images (spatial only)
 # and maybe an additional image - 3 colours of labels
@@ -100,3 +109,16 @@ segmented_plot = aux.slicer(kidney_segmented, slideaxis=2, title='Segmented')
 #
 # #==============================================================================
 # #7. save to Nifti
+
+Loaded_File = nib.load(os.path.join(input_path, 'Output volume_1.nii'))
+aff = Loaded_File.affine
+
+Cortex_nifti = nib.Nifti1Image(kidney_cortex, aff)
+Medulla_nifti = nib.Nifti1Image(kidney_medulla, aff)
+Pelvis_nifti = nib.Nifti1Image(kidney_pelvis, aff)
+
+fnameend = '_VOL' + str(vol) + '.nii'
+os.chdir(output_path) #change the path to the output folder for saving
+nib.save(Cortex_nifti, 'Cortex'+fnameend)
+nib.save(Medulla_nifti, 'Medulla'+fnameend)
+nib.save(Pelvis_nifti, 'Pelvis'+fnameend)
