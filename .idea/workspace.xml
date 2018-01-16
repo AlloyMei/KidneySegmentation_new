@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="66dc3975-378f-4ded-8c9c-133b7e111b57" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/simple_tries.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/~$dney segmentation in DCE.docx" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.py" afterPath="$PROJECT_DIR$/main.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,8 +18,8 @@
       <file leaf-file-name="auxiliary_functions.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/auxiliary_functions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="237">
-              <caret line="38" column="4" lean-forward="true" selection-start-line="38" selection-start-column="4" selection-end-line="38" selection-end-column="4" />
+            <state relative-caret-position="1054">
+              <caret line="62" column="32" lean-forward="true" selection-start-line="62" selection-start-column="32" selection-end-line="62" selection-end-column="32" />
               <folding>
                 <element signature="e#65#83#0" expanded="true" />
               </folding>
@@ -29,10 +30,10 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="288">
-              <caret line="99" column="14" lean-forward="false" selection-start-line="99" selection-start-column="0" selection-end-line="99" selection-end-column="14" />
+            <state relative-caret-position="-307">
+              <caret line="79" column="0" lean-forward="true" selection-start-line="79" selection-start-column="0" selection-end-line="79" selection-end-column="0" />
               <folding>
-                <element signature="e#56#65#0" expanded="true" />
+                <element signature="e#40#49#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -46,6 +47,7 @@
       <find>plo</find>
       <find>plt.plot</find>
       <find>input</find>
+      <find>label</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -198,8 +200,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/auxiliary_functions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="237">
-          <caret line="38" column="4" lean-forward="true" selection-start-line="38" selection-start-column="4" selection-end-line="38" selection-end-column="4" />
+        <state relative-caret-position="1054">
+          <caret line="62" column="32" lean-forward="true" selection-start-line="62" selection-start-column="32" selection-end-line="62" selection-end-column="32" />
           <folding>
             <element signature="e#65#83#0" expanded="true" />
           </folding>
@@ -208,10 +210,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="99" column="14" lean-forward="false" selection-start-line="99" selection-start-column="0" selection-end-line="99" selection-end-column="14" />
+        <state relative-caret-position="-307">
+          <caret line="79" column="0" lean-forward="true" selection-start-line="79" selection-start-column="0" selection-end-line="79" selection-end-column="0" />
           <folding>
-            <element signature="e#56#65#0" expanded="true" />
+            <element signature="e#40#49#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -1,6 +1,4 @@
 # KIDNEY SEGMENTATION PROJECT - main.py
-
-# imports here
 import os
 from inspect import getsourcefile
 
@@ -15,22 +13,21 @@ plt.close('all')
 
 #==============================================================================
 # PATHS
-#path='Segmentation_Images'
-vol = '1' # 1 or 2 But we will probably work on 1 only
+vol = '1' # We work only on vol 1
 
-data_folder = 'InputData\\VOL_' + vol #folder with the images (I think we should handle VOL1 and VOL2 separately)
-output_folder = 'OutputData\\O_VOL_' + vol #folder with the output images
+data_folder = 'InputData\\VOL_' + vol # folder with the images
+output_folder = 'OutputData\\O_VOL_' + vol # folder with the output images
 
-current_file_dir = os.path.dirname(os.path.abspath(getsourcefile(lambda:0))) #find current file path
+current_file_dir = os.path.dirname(os.path.abspath(getsourcefile(lambda:0))) # find current file path
 parent_dir = os.path.normpath(os.path.join(current_file_dir, "..")) # go up one level
-input_path = os.path.join(parent_dir, data_folder) #absolute path to the data
+input_path = os.path.join(parent_dir, data_folder) # absolute path to the data
 output_path = os.path.join(parent_dir, output_folder)
 mask_path = os.path.join(parent_dir, 'MaskData')
 
 os.chdir(current_file_dir)
 #==============================================================================
 #1. load the data
-kidney_mask_side = 'R' # L or R
+kidney_mask_side = 'L' # L or R
 masked_output_fn = 'Masked_' + kidney_mask_side + '.nii'
 MaskedData = nib.load(os.path.join(output_path, masked_output_fn))
 MaskedData = np.array(MaskedData.get_data())
@@ -92,12 +89,12 @@ kidney_segmented = np.transpose(np.array(kmeans_labels).reshape(np.transpose(Mas
 # create ROIs - 3 separate 3D images (spatial only)
 if kidney_mask_side == 'R':
     kidney_medulla = np.where(kidney_segmented==1,1,0)
-    kidney_pelvis = np.where(kidney_segmented==2,1,0)
-    kidney_cortex = np.where(kidney_segmented==3,1,0)
-else:
-    kidney_medulla = np.where(kidney_segmented==1,1,0)
     kidney_cortex = np.where(kidney_segmented==2,1,0)
     kidney_pelvis = np.where(kidney_segmented==3,1,0)
+else:
+    kidney_medulla = np.where(kidney_segmented==1,1,0)
+    kidney_pelvis = np.where(kidney_segmented==2,1,0)
+    kidney_cortex = np.where(kidney_segmented==3,1,0)
 
 segmented_plot = aux.slicer(kidney_segmented, slideaxis=2, title='Segmented')
 medulla_plot = aux.slicer(kidney_medulla, slideaxis=2, title='Medulla')
@@ -111,10 +108,12 @@ pelvis_plot = aux.slicer(kidney_pelvis, slideaxis=2, title='Pelvis')
 Loaded_File = nib.load(os.path.join(input_path, 'Output volume_1.nii'))
 aff = Loaded_File.affine
 
+# Adjusting to Nifti file format
 Cortex_nifti = nib.Nifti1Image(kidney_cortex, aff)
 Medulla_nifti = nib.Nifti1Image(kidney_medulla, aff)
 Pelvis_nifti = nib.Nifti1Image(kidney_pelvis, aff)
 
+# Saving results to files
 fnameend = '_VOL' + str(vol) + '.nii'
 os.chdir(output_path) #change the path to the output folder for saving
 nib.save(Cortex_nifti, 'Cortex'+fnameend)
